@@ -1,0 +1,157 @@
+\documentclass[twocolumn, dvipdfmx]{jarticle}
+
+\usepackage[
+    top=20truemm,
+    bottom=20truemm,
+    left=10truemm,
+    right=10truemm
+]{geometry}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{hyperref}
+\usepackage{color}
+\usepackage{amsmath, amssymb}
+\usepackage{url}
+\usepackage{braket}
+\usepackage{booktabs}
+\usepackage{subfigmat}
+\usepackage{pxjahyper}
+\usepackage{siunitx}
+
+\hypersetup{
+    pdftitle={正規分布に従う疑似乱数を生成する方法は！？速度は！？調べてみました！},
+    pdfauthor={Kumpei IKUTA}
+}
+
+\begin{document}
+
+\title{正規分布に従う疑似乱数を生成する方法は！？速度は！？調べてみました！}
+\author{Kumpei IKUTA}
+\date{2020-12-XX}
+
+\maketitle
+
+\section*{はじめに}
+
+こんにちは。\href{https://adventar.org/calendars/5671}{\textcolor{blue}{\underline{応用情報 Advent Calender 2020}}} も XX 日目に突入しましたが、みなさまいかがお過ごしでしょうか。知的情報処理研究室 M1 の生田です。
+
+正規分布は自然現象を良く表現する\footnote{ただし、20世紀以降の複雑系科学の発展に伴い、この考え方は過去のものとなりつつあるようです。}ことから、数値シミュレーションをはじめとした工学上の応用が数多くあります。また、正規分布からのサンプリングは、他の確率分布（t分布やベータ分布など）に従う乱数の生成にも用いられるため、直接的に正規分布を用いないシミュレーションでも、間接的に正規分布が必要になることがあります。
+
+しかし、現在広く使われている疑似乱数生成アルゴリズム（線形合同法やメルセンヌ・ツイスターなど）やハードウェア乱数生成器（x86 の \texttt{RDRAND} 命令や Linux の \texttt{/dev/random} など）は、どれも一様乱数しか生成することができません。そのため、一様分布からサンプルした乱数を、何らかの工夫によって正規分布に変換する必要があります。本記事では、 6 つのアルゴリズムの概要を紹介したのち、それぞれについてパフォーマンスの比較を行っていきます。数学的な正当性の証明については、各アルゴリズムの文献を参照してください。
+
+また、紹介するアルゴリズムの選定や実装上のテクニックについて、四辻哲章『計算機シミュレーションのための確率分布乱数生成法』（プレアデス出版、2010）\cite{yotsuji2010} および各種プログラミング言語のコンパイラ・インタプリタのソースコードを参考にしました。
+
+\section*{アルゴリズムの紹介}
+
+\subsection*{CLT による近似}
+
+確率変数の和の分布は、サンプル数を増やしていくと正規分布に収束することが知られています（CLT; 中心極限定理）。とくに、区間 $(0, 1)$ から一様にサンプルした確率変数を 12 個足すと、平均 $6$、分散 $1$ の分布となるので、これを正規分布の近似として利用する方法があります。下式では、この性質を用い、一様乱数 $U_i$ から正規分布（の近似）に従う確率変数 $Z$ をサンプルしています。
+
+\begin{align*}
+    Z = \sum_{i=1}^{12} U_i - 6
+\end{align*}
+
+単純な加減算のみで正規分布を近似できる一方、1つの確率変数をサンプルするのに 12 個の一様乱数をサンプルする必要があるため、実用されるケースは限定的です。
+
+\subsection*{Box-Muller 法}
+
+Box-Muller 法 \cite{box1958note} は、2 次元正規分布の極座標変換に基づく以下の関数を用い、区間 $(0, 1]$ から一様にサンプルした 2 つの乱数（下式の $U_1$ と $U_2$）を変換します。
+
+\begin{align*}
+    Z_1 &= \sqrt{-2 \log (U_1)} \cos(2 \pi U_2) \\
+    Z_2 &= \sqrt{-2 \log (U_1)} \sin(2 \pi U_2)
+\end{align*}
+
+一様分布から 2 つの変数をサンプルし、 2 つの正規分布に従う（独立な）変数をサンプルすることができます。そのため、多くの実装では状態を保持することで計算回数を減らす工夫をしています。\href{https://github.com/python/cpython/blob/b0dfc7581697f20385813582de7e92ba6ba0105f/Lib/random.py#L550-L586}{\textcolor{blue}{\underline{CPython の \texttt{random.gauss}}}} はこのアルゴリズムで実装されています。
+
+\subsection*{Polar 法}
+
+Box-Muller 法は、一度のサンプリングに平方根・対数・三角関数という 3 つの浮動小数点演算が必要でした。1960 年代当時、これらの演算は非常に遅かったため、少しでも呼び出し回数を減らすために考えられたのが Polar 法 \cite{marsaglia1964convinient} です。Polar 法は、以下の式で変換を行います。
+
+\begin{align*}
+    Z_1 &= U_1 \sqrt{\frac{-2 \log s}{s}} \\
+    Z_2 &= U_2 \sqrt{\frac{-2 \log s}{s}} \\
+    \textrm{ただし } s &= U_1 ^2 + U_2 ^2
+\end{align*}
+
+ここで $U_1$ と $U_2$ は $0$ を除く単位円板上（$0 < s < 1$）から一様にサンプルする必要がありますが、これを直接実装するのは困難です。そこで、 $U_1$, $U_2$ それぞれを $(-1, 1)$ の区間から一様にサンプルし、単位円板から外れていたらサンプルしなおすという処理を行います（棄却サンプリング）。この場合、$U_1$, $U_2$ は約 21.5 \% の確率\footnote{$(4 - \pi) / 4 \approx 0.215$}で再サンプルが必要になってしまいますが、それでも三角関数の計算よりは速いだろうということが期待されます。\href{https://github.com/gcc-mirror/gcc/blob/60d9f254876a00260992b2f37639ef4d82d9db8f/libstdc++-v3/include/bits/random.tcc#L1818-L1830}{\textcolor{blue}{\underline{GCC}}} や \href{https://github.com/llvm/llvm-project/blob/31dfaff3b395a19f23bb1010bfcec67452efe02d/libcxx/include/random#L4370-L4383}{\textcolor{blue}{\underline{Clang}}} の C++ コンパイラでは、標準ライブラリの \texttt{std::normal\_distribution} をこのアルゴリズムで実装しています。
+
+\subsection*{Kinderman 法}
+
+まず、任意の確率密度関数 $f(x)$ について、$\mathbb{R}^2$ 上の集合 $C_f$ を以下のように定義します。
+
+\begin{align*}
+    C_f = \Set{ (u_1, u_2) | 0 \leq u_2 \leq \sqrt{f\left(\frac{u_2}{u_1}\right)} }
+\end{align*}
+
+この集合上から一様にサンプルした点 $(U_1, U_2)$ について、${U_2} / {U_1}$ は確率密度 $f(x)$ に従って分布します。Kinderman 法 \cite{kinderman1977computer} では、この性質を用いて正規分布からのサンプリングを行います。標準正規分布に対する $C_f$ は、下式のようになります\footnote{元論文では分散が $2\pi$ の正規分布に対する $C_f$ しか示されていないので、注意が必要です。}。
+
+\begin{align*}
+    C_f = \Set{ (u_1, u_2) | \frac{u_2^2}{u_1^2} + \log (2 \pi) \leq -4 \log u_1 }
+\end{align*}
+
+当然、この集合から要素を直接サンプルすることはできないので、Polar 法と同様に棄却サンプリングを行います。2 つの一様乱数を用いて長方形領域からサンプルする場合、棄却確率を最小化するためには、$U_1$ を区間 $\left(0, (2 \pi)^{-\frac{1}{4}}\right)$ から、$U_2$ を区間 $\left(-\sqrt{\frac{\sqrt{2 / \pi}}{e}}, \sqrt{\frac{\sqrt{2 / \pi}}{e}}\right)$ から一様にサンプルする必要があります。この場合の棄却確率 は約 26.9 \% です。
+
+また、\href{https://github.com/python/cpython/blob/b0dfc7581697f20385813582de7e92ba6ba0105f/Lib/random.py#L529-L548}{\textcolor{blue}{\underline{CPython の \texttt{random.normalvariate}}}} はこのアルゴリズムで実装されています。
+
+\subsection*{Monty-Python 法}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics{figs/monty-python.pdf}
+    \caption{Monty-Python 法に基づく変形}
+    \label{fig:monty-python-plot}
+\end{figure}
+
+Monty-Python 法 \cite{marsaglia1998monty} は、確率密度関数のグラフを変形して長方形に詰めこむことで、棄却サンプリングを効率化するというアイデアに基づくアルゴリズムです。
+
+正規分布に対して Monty-Python 法を適用する場合、確率密度関数を図 \ref{fig:monty-python-plot} で示す $A$, $B$, $C$, $D$ の 4 つの領域に分割し、$C$ を $C'$ に回転・移動させ、幅 $b$ 、高さ $0.5/b$ の長方形に詰め込みます。この際、$a = \sqrt{\log 4}$, $b = \sqrt{2 \pi}$ とし、さらに $C'$ を適切にスケーリングすることで、棄却確率を約 1.2\% まで下げることができます。また、$B$ と $C'$ の間の領域 $D'$ は $D$ と同じ面積なので、サンプルした点が $f(x)$ と $g(x)$ の間にあった場合は $D$ からのサンプリングを行います。
+
+\subsection*{Ziggurat 法}
+
+実装失敗！！！！！！！！！！！！！ \cite{marsaglia1984fast} \cite{marsaglia2000ziggurat}
+
+メモ：99.93 \% で初回のサンプルが採択されるはずなのにぜんぜん採択されない、バカみたいに遅い
+
+Go の \texttt{rand.NormFloat64} や Julia の \texttt{randn} はこのアルゴリズムで実装されています。Boost や GSL でも使われてるらしいです。
+
+\section*{実装・ベンチマーク}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigmatrix}{3}
+        \subfigure[CLT による近似]{\includegraphics[]{figs/hist-clt.pdf}}
+        \subfigure[Box-Muller 法]{\includegraphics[]{figs/hist-box-muller.pdf}}
+        \subfigure[Polar 法]{\includegraphics[]{figs/hist-polar.pdf}}
+        \subfigure[Kinderman 法]{\includegraphics[]{figs/hist-kinderman.pdf}}
+        \subfigure[Monty-Python 法]{\includegraphics[]{figs/hist-montypython.pdf}}
+        \subfigure[Ziggurat 法]{\includegraphics[]{figs/hist-ziggurat.pdf}}
+    \end{subfigmatrix}
+    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n_samples.tex}}$)}
+    \label{fig:histogram}
+\end{figure}
+
+\begin{table*}
+    \centering
+    \caption{ベンチマーク結果}
+    \input{benchmark_result.tex}
+    \label{tab:benchmark_result}
+\end{table*}
+
+以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz) です。
+
+また、正しく実装できているか確認するため、各アルゴリズムで生成した乱数列について Shapiro-Wilk 検定を実施しました。Shapiro-Wilk 検定には「真の」正規分布に従う乱数列が必要ですが、これには標準ライブラリの \texttt{std::normal\_distribution} を（正しく実装されていると信じて）用いました。
+
+\section*{考察}
+
+Kinderman 法は Box-Muller 法や Polar 法に比べてかなり遅くなりました。これは i) 正規分布から 1 回サンプルするのに一様乱数からのサンプルが 2 回必要な点や、ii) Kinderman 法はそもそもあまりスピードを重視しておらず、任意の分布を簡単にサンプルできる一般的なアルゴリズムとしての側面が強い（元論文でも、アルゴリズムが "short" であることが強調されています）点を考慮すると、妥当な結果と言えるでしょう。
+
+\section*{おわりに}
+
+いかがでしたか？調べてみた結果、よくわかりませんでした！自分が産まれてないような時代の論文を読んで実装するという体験は、なかなか面白いものがありました。浮動小数点演算を減らすための工夫が FPU の高速化・内蔵化によって却って逆効果となったり、メモリをたくさん使って LUT を参照する Ziggurat が高速だったりと、計算機の進化の潮流を感じることができ、楽しかったです。
+
+明日の\href{https://adventar.org/calendars/5671}{\textcolor{blue}{\underline{応用情報 Advent Calender 2020}}}では、xxさんがyyについて書いてくれるそうです。お楽しみに！
+
+\bibliography{reference}
+\bibliographystyle{junsrt}
+
+\end{document}

@@ -1,0 +1,10 @@
+.vscode/
+benchmark
+histogram
+result.txt
+benchmark.txt
+histogram.txt
+tex/figs/
+tex/benchmark_result.tex
+tex/n_samples.tex
+advent.pdf
