@@ -15,7 +15,7 @@ figures: histogram.txt
 	mkdir -p tex/figs
 	gnuplot histogram.plt
 	gnuplot montypython.plt
-	gnuplot normal_dist.plt
+	gnuplot normal-dist.plt
 
 tables: benchmark.txt
 	python generate-table.py
@@ -39,8 +39,8 @@ clean:
 	rm -f benchmark.txt
 	rm -f histogram.txt
 	rm -f -r tex/figs
-	rm -f tex/benchmark_result.tex
-	rm -f tex/n_samples.tex
+	rm -f tex/benchmark-result.tex
+	rm -f tex/n-samples.tex
 	rm -f advent.pdf
 
 .PHONY: result.txt clean
