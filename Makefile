@@ -15,6 +15,7 @@ figures: histogram.txt
 	mkdir -p tex/figs
 	gnuplot histogram.plt
 	gnuplot montypython.plt
+	gnuplot normal_dist.plt
 
 tables: benchmark.txt
 	python generate_table.py
