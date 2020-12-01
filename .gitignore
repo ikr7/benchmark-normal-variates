@@ -5,6 +5,6 @@ result.txt
 benchmark.txt
 histogram.txt
 tex/figs/
-tex/benchmark_result.tex
-tex/n_samples.tex
+tex/benchmark-result.tex
+tex/n-samples.tex
 advent.pdf

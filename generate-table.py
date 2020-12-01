@@ -1,7 +1,7 @@
 from pathlib import Path
 
 input_path = Path('benchmark.txt')
-output_path = Path('tex/benchmark_result.tex')
+output_path = Path('tex/benchmark-result.tex')
 
 output_text = ''
 output_text += '\\begin{tabular}{crrrr}\n'

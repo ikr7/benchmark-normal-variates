@@ -3,7 +3,7 @@ samples = 100000
 compiler_options = -std=c++2a -Wall --pedantic-errors
 
 advent.pdf: figures tables
-	echo "l($(samples))/l(10)" | bc -l | cut -f1 -d. > tex/n_samples.tex
+	echo "l($(samples))/l(10)" | bc -l | cut -f1 -d. > tex/n-samples.tex
 	cd tex && latexmk -quiet -r latexmkrc -C advent.tex
 	cd tex && latexmk -quiet -r latexmkrc advent.tex
 	cd tex && latexmk -quiet -r latexmkrc -c advent.tex
@@ -18,7 +18,7 @@ figures: histogram.txt
 	gnuplot normal_dist.plt
 
 tables: benchmark.txt
-	python generate_table.py
+	python generate-table.py
 
 histogram.txt: histogram result.txt
 	cat result.txt | ./histogram $(bins)

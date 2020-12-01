@@ -132,15 +132,15 @@ Go の \texttt{rand.NormFloat64} や Julia の \texttt{randn} はこのアルゴ
         \subfigure[Monty-Python 法]{\includegraphics[page=5]{figs/histograms.pdf}}
         \subfigure[Ziggurat 法]{\includegraphics[page=6]{figs/histograms.pdf}}
     \end{subfigmatrix}
-    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n_samples.tex}}$)}
+    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n-samples.tex}}$)}
     \label{fig:histogram}
 \end{figure}
 
 \begin{table*}
     \centering
     \caption{ベンチマーク結果}
-    \input{benchmark_result.tex}
-    \label{tab:benchmark_result}
+    \input{benchmark-result.tex}
+    \label{tab:benchmark-result}
 \end{table*}
 
 以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz) です。
