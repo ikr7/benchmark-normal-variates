@@ -124,13 +124,13 @@ struct MontyPython : NormalDistSampler {
         const auto [sign, u1] = signed_uniform();
         const double ux = u1 * b;
         if (ux < a) {
-            return sign * ux;
+            return copysign(ux, sign);
         }
         const double u2 = uniform() / 2;
         if (log(u2) < -(ux * ux / 2)) {
-            return sign * ux;
+            return copysign(ux, sign);
         }
-        const double Y = sign * s * (b - ux);
+        const double Y = copysign(s * (b - ux), sign);
         if (log(p - u2) < q - Y * Y / 2) {
             return Y;
         }
@@ -140,7 +140,7 @@ struct MontyPython : NormalDistSampler {
             u4 = uniform();
             X = sqrt(d - 2 * log(1 - u3));
         } while (b < X * u4);
-        return sign * X;
+        return copysign(X, sign);
     }
     const string name () {
         return "Monty-Python 法"s;
@@ -213,16 +213,16 @@ struct ZigguratAlgorithm : NormalDistSampler {
         int sign = ((ui & 1) == 0) ? 1 : -1;
         ui = ui >> 1;
         if (ui < lut.K[i]) {
-            return ui * lut.W[i] * sign;
+            return copysign(ui * lut.W[i], sign);
         }
         if (i == n - 1) {
-            return sample_from_tail(lut.r) * sign;
+            return copysign(sample_from_tail(lut.r), sign);
         } else {
             double ux = ui * lut.W[i];
             double f = exp(-0.5 * ux * ux);
             double u = uniform();
             if (u * (lut.F[i] - lut.F[i + 1]) < f - lut.F[i + 1]) {
-                return ux * sign;
+                return copysign(ux, sign);
             } else {
                 return sample();
             }
