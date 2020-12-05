@@ -8,7 +8,7 @@ struct NormalDistSampler {
     mt19937 rng;
     bool has_z2;
     double z2;
-    int uniform_call;
+    unsigned long long uniform_call;
     NormalDistSampler () {
         random_device seed_gen;
         rng = mt19937(seed_gen());
