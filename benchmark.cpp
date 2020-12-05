@@ -20,23 +20,6 @@ struct NormalDistSampler {
         uniform_call++;
         return uniform_dist(rng);
     }
-    const pair<int, double> signed_uniform () {
-        double u = uniform() * 2;
-        if (u <= 1) {
-            return make_pair(1, u);
-        } else {
-            return make_pair(-1, u - 1);
-        }
-    }
-    const double sample_from_tail (double b) {
-        double d = b * b, u1, u2, X;
-        do {
-            u1 = uniform();
-            u2 = uniform();
-            X = sqrt(d - 2 * log(1 - u1));
-        } while (b < X * u2);
-        return X;
-    }
     virtual const double sample () = 0;
     virtual const string name () = 0; 
 };
@@ -129,6 +112,14 @@ struct MontyPython : NormalDistSampler {
         q = log(s);
         d = b * b;
     }
+    const pair<int, double> signed_uniform () {
+        double u = uniform() * 2;
+        if (u <= 1) {
+            return make_pair(1, u);
+        } else {
+            return make_pair(-1, u - 1);
+        }
+    }
     const double sample () {
         const auto [sign, u1] = signed_uniform();
         const double ux = u1 * b;
@@ -205,6 +196,15 @@ struct ZigguratAlgorithm : NormalDistSampler {
     const mbit_uint uniform_uint () {
         uniform_call++;
         return uniform_uint_dist(rng);
+    }
+    const double sample_from_tail (double b) {
+        double d = b * b, u1, u2, X;
+        do {
+            u1 = uniform();
+            u2 = uniform();
+            X = sqrt(d - 2 * log(1 - u1));
+        } while (b < X * u2);
+        return X;
     }
     const double sample () {
         mbit_uint ui = uniform_uint();
