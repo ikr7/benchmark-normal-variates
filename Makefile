@@ -26,7 +26,7 @@ histogram.txt: histogram result.txt
 histogram: histogram.cpp
 	$(CXX) $(compiler_options) -o histogram histogram.cpp
 
-result.txt: benchmark
+result.txt benchmark.txt: benchmark
 	./benchmark $(samples) 1
 
 benchmark: benchmark.cpp
@@ -43,4 +43,4 @@ clean:
 	$(RM) tex/n-samples.tex
 	$(RM) advent.pdf
 
-.PHONY: result.txt clean
+.PHONY: result.txt benchmark.txt clean
