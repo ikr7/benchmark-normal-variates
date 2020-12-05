@@ -1,6 +1,6 @@
 bins = 50
 samples = 100000
-compiler_options = -std=c++2a -Wall --pedantic-errors
+compiler_options = -std=c++2a -Wall --pedantic-errors -O2
 
 advent.pdf: figures tables
 	echo "l($(samples))/l(10)" | bc -l | cut -f1 -d. > tex/n-samples.tex
