@@ -1,4 +1,4 @@
-set term pdfcairo enhanced size 8in, 3in
+set term pdfcairo enhanced size 8in, 2in
 set output "tex/figs/normal-dist.pdf"
 
 set samples 1000
