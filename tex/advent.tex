@@ -125,10 +125,10 @@ Ziggurat 法 \cite{marsaglia1984fast, marsaglia2000ziggurat} は、数学関数�
 
 以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz)、コンパイラは GCC (\texttt{g++}) です。また、コンパイル時には \texttt{-O2} による最適化を行いました。
 
-以上の環境のもと、各アルゴリズムで $N = 10^{\protect\input{n-samples.tex}}$ 個のサンプリングを行いました。表 \ref{tab:benchmark-result} に計測結果をまとめます。また、図 \ref{fig:histogram} はそれぞれのアルゴリズムで生成した乱数列のヒストグラムです。
+以上の環境のもと、各アルゴリズムで $10^{\protect\input{n-samples-benchmark.tex}}$ 個のサンプリングを行いました。表 \ref{tab:benchmark-result} に計測結果をまとめます。また、図 \ref{fig:histogram} はそれぞれのアルゴリズムで生成した $10^{\protect\input{n-samples-histogram.tex}}$ 個の乱数列のヒストグラムです。
 
 \begin{table}
-    \caption{ベンチマーク結果 ($N = 10^{\protect\input{n-samples.tex}}$)}
+    \caption{ベンチマーク結果 ($N = 10^{\protect\input{n-samples-benchmark.tex}}$)}
     \label{tab:benchmark-result}
     \begin{threeparttable}
         \centering
@@ -150,7 +150,7 @@ Ziggurat 法 \cite{marsaglia1984fast, marsaglia2000ziggurat} は、数学関数�
         \subfigure[Monty-Python 法]{\includegraphics[page=5]{figs/histograms.pdf}}
         \subfigure[Ziggurat 法]{\includegraphics[page=6]{figs/histograms.pdf}}
     \end{subfigmatrix}
-    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n-samples.tex}}$)}
+    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n-samples-histogram.tex}}$)}
     \label{fig:histogram}
 \end{figure}
 

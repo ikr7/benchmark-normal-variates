@@ -6,5 +6,6 @@ benchmark.txt
 histogram.txt
 tex/figs/
 tex/benchmark-result.tex
-tex/n-samples.tex
+tex/n-samples-benchmark.tex
+tex/n-samples-histogram.tex
 advent.pdf
