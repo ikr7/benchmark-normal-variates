@@ -156,72 +156,76 @@ struct MontyPython : NormalDistSampler {
     }
 };
 
+template<size_t k = 8, typename ki_type = uint64_t>
 struct ZigguratLUT {
-    const size_t m = 64, k = 8;
+    static_assert(
+        is_same<ki_type, uint64_t>::value || is_same<ki_type, uint32_t>::value,
+        "ki_type must be either uint64_t or uint32_t"
+    );
+    static_assert(
+        k == 7 || k == 8,
+        "k must be either 7 or 8"
+    );
+    const double r = k == 7 ? 3.442619855899 : 3.6541528853610088;
+    const double v = k == 7 ? 0.00991256303526217 : 0.00492867323399;
+    const size_t m = 8 * sizeof(ki_type);
     const size_t n = 1 << k;
-    vector<double> W, F;
-    vector<int64_t> K;
-    double r = 3.6541528853610088;
-    double v = 0.00492867323399;
-    double f (const double& x) {
-        return exp(-(x * x / 2));
-    }
+    array<double, (1 << k)> W, F;
+    array<ki_type, (1 << k)> K;
     ZigguratLUT () {
-
-        W.resize(n);
-        K.resize(n);
-        F.resize(n);
-
-        W[n - 1] = v * exp(r * r / 2) / ((int64_t)1 << (m - k - 1));
-        W[n - 2] = r / ((int64_t)1 << (m - k - 1));
+        W[n - 1] = v * exp(0.5 * r * r) / ((ki_type)1 << (m - k - 1));
+        W[n - 2] = r / ((ki_type)1 << (m - k - 1));
         K[n - 1] = floor(r / W[n - 1]);
-        F[n - 1] = exp(-(r * r / 2));
-
-        double x = r; // x[n-1] = r
-        x = sqrt(-2 * log(f(x) + v / x)); // x[n-2]
-
+        F[n - 1] = exp(-0.5 * r * r);
+        double x = r;
         for (size_t i = n - 2; i >= 1; i--) {
-            W[i - 1] = x / ((int64_t)1 << (m - k - 1));
+            x = sqrt(-2 * log(exp(-0.5 * x * x) + v / x));
+            W[i - 1] = x / ((ki_type)1 << (m - k - 1));
             K[i] = floor(x / W[i]);
-            F[i] = f(x);
-            x = sqrt(-2 * log(f(x) + v / x));
+            F[i] = exp(-0.5 * x * x);
         }
-
         K[0] = 0;
         F[0] = 1;
-
     }
 };
 
-
+template<size_t k = 8, typename mbit_uint = uint64_t>
 struct ZigguratAlgorithm : NormalDistSampler {
-    ZigguratLUT lut;
-    uniform_int_distribution<uint64_t> uniform_uint64_dist;
-    const uint64_t uniform_uint64 () {
+    static_assert(
+        is_same<mbit_uint, uint64_t>::value || is_same<mbit_uint, uint32_t>::value,
+        "mbit_uint must be either uint64_t or uint32_t"
+    );
+    static_assert(
+        k == 7 || k == 8,
+        "k must be either 7 or 8"
+    );
+    ZigguratLUT<k, mbit_uint> lut;
+    uniform_int_distribution<mbit_uint> uniform_uint_dist;
+    const size_t n = 1 << k;
+    const mbit_uint uniform_uint () {
         uniform_call++;
-        return uniform_uint64_dist(rng);
+        return uniform_uint_dist(rng);
     }
     const double sample () {
-        const uint64_t k = 8;
-        uint64_t u_uint64 = uniform_uint64();
-        uint64_t i = u_uint64 & ((1 << k) - 1);
-        uint64_t u_uint56 = u_uint64 >> k;
-        int sign = ((u_uint56 & 1) == 0) ? 1 : -1;
-        uint64_t u_uint55 = u_uint64 >> 1;
-        if (u_uint55 < lut.K[i]) {
-            return 0;
-            return sign * u_uint56 * lut.W[i];
+        mbit_uint ui = uniform_uint();
+        mbit_uint i = ui & (((mbit_uint)1 << k) - 1);
+        ui = ui >> k;
+        int sign = ((ui & 1) == 0) ? 1 : -1;
+        ui = ui >> 1;
+        if (ui < lut.K[i]) {
+            return ui * lut.W[i] * sign;
         }
-        if (i == (1 << k) - 1) {
-            return sign * sample_from_tail(lut.r);
-        }
-        double u_x = u_uint56 * lut.W[i];
-        double f = exp(-(u_x * u_x / 2));
-        double u = uniform();
-        if (u * (lut.F[i] - lut.F[i + 1]) <= f - lut.F[i + 1]) {
-            return sign * u_x;
+        if (i == n - 1) {
+            return sample_from_tail(lut.r) * sign;
         } else {
-            return sample();
+            double ux = ui * lut.W[i];
+            double f = exp(-0.5 * ux * ux);
+            double u = uniform();
+            if (u * (lut.F[i] - lut.F[i + 1]) < f - lut.F[i + 1]) {
+                return ux * sign;
+            } else {
+                return sample();
+            }
         }
     }
     const string name () {
@@ -240,7 +244,7 @@ int main (int argc, char* argv[]) {
     Polar po;
     Kinderman km;
     MontyPython mp;
-    ZigguratAlgorithm za;
+    ZigguratAlgorithm<> za;
 
     vector<NormalDistSampler*> samplers = {&cl, &bm, &po, &km, &mp, &za};
 
