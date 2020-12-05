@@ -24,23 +24,23 @@ histogram.txt: histogram result.txt
 	cat result.txt | ./histogram $(bins)
 
 histogram: histogram.cpp
-	g++ $(compiler_options) -o histogram histogram.cpp
+	$(CXX) $(compiler_options) -o histogram histogram.cpp
 
 result.txt: benchmark
 	./benchmark $(samples) 1
 
 benchmark: benchmark.cpp
-	g++ $(compiler_options) -o benchmark benchmark.cpp
+	$(CXX) $(compiler_options) -o benchmark benchmark.cpp
 
 clean:
-	rm -f benchmark
-	rm -f histogram
-	rm -f result.txt
-	rm -f benchmark.txt
-	rm -f histogram.txt
-	rm -f -r tex/figs
-	rm -f tex/benchmark-result.tex
-	rm -f tex/n-samples.tex
-	rm -f advent.pdf
+	$(RM) benchmark
+	$(RM) histogram
+	$(RM) result.txt
+	$(RM) benchmark.txt
+	$(RM) histogram.txt
+	$(RM) -r tex/figs
+	$(RM) tex/benchmark-result.tex
+	$(RM) tex/n-samples.tex
+	$(RM) advent.pdf
 
 .PHONY: result.txt clean
