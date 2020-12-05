@@ -16,6 +16,7 @@
 \usepackage{subfigmat}
 \usepackage{pxjahyper}
 \usepackage{siunitx}
+\usepackage{threeparttable}
 
 \hypersetup{
     pdftitle={正規分布に従う疑似乱数を生成する方法は？速度は？調べてみました！},
@@ -136,12 +137,18 @@ Go の \texttt{rand.NormFloat64} や Julia の \texttt{randn} はこのアルゴ
     \label{fig:histogram}
 \end{figure}
 
-\begin{table*}
-    \centering
-    \caption{ベンチマーク結果}
-    \input{benchmark-result.tex}
+\begin{table}
+    \caption{ベンチマーク結果 ($N = 10^{\protect\input{n-samples.tex}}$)}
     \label{tab:benchmark-result}
-\end{table*}
+    \begin{threeparttable}
+        \centering
+        \input{benchmark-result.tex}
+        \begin{tablenotes}
+            \item[a] 1秒あたりのサンプル数
+            \item[b] 正規乱数を1つサンプルするごとに必要な一様乱数の個数（平均値）
+        \end{tablenotes}
+    \end{threeparttable}
+\end{table}
 
 以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz) です。
 

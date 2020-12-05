@@ -6,7 +6,7 @@ output_path = Path('tex/benchmark-result.tex')
 output_text = ''
 output_text += '\\begin{tabular}{crrrr}\n'
 output_text += '    \\toprule\n'
-output_text += '    アルゴリズム & 実行時間 ($\\mu$s) & 速度 & $N_U$ \\\\\n'
+output_text += '    アルゴリズム & 実行時間 ($\\mu$s) & 速度 \\tnote{a} & $N_U$ \\tnote{b} \\\\\n'
 output_text += '    \\midrule\n'
 
 for line in input_path.read_text().split('\n')[1:-1]:
