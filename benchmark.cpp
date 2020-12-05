@@ -244,7 +244,7 @@ int main (int argc, char* argv[]) {
     Polar po;
     Kinderman km;
     MontyPython mp;
-    ZigguratAlgorithm<> za;
+    ZigguratAlgorithm<8, uint32_t> za;
 
     vector<NormalDistSampler*> samplers = {&cl, &bm, &po, &km, &mp, &za};
 
