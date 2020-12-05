@@ -117,7 +117,7 @@ Monty-Python 法 \cite{marsaglia1998monty} は、確率密度関数のグラフ�
 
 \subsection*{Ziggurat 法}
 
-Ziggurat 法 \cite{marsaglia1984fast, marsaglia2000ziggurat} は、数学関数の呼び出しを減らすだけでなく、浮動小数点数の算術・比較演算の回数を極限まで削減することを目的として考案されたアルゴリズムです。事前計算したルックアップテーブルに基づいて確率密度関数を $n$ 個（ここで $n$ は $256$ または $128$ が用いられることが多いです）の面積が等しい長方形で覆い、きわめて効率良く棄却サンプリングを行います。高効率なサンプリングとビット演算を多用した計算のテクニックにより、99.3 \% の確率で浮動小数演算を1回に抑えることができます。
+Ziggurat 法 \cite{marsaglia1984fast, marsaglia2000ziggurat} は、数学関数の呼び出しを減らすだけでなく、浮動小数点数の算術・比較演算の回数を極限まで削減することを目的として考案されたアルゴリズムです。事前計算したルックアップテーブルに基づいて確率密度関数を $n$ 個（ここで $n$ は $256$ または $128$ が用いられることが多いです）の面積が等しい長方形で覆い、きわめて効率良く棄却サンプリングを行います。高効率なサンプリングとビット演算を多用した計算のテクニックにより、\textbf{99.3 \% の確率で浮動小数演算を乗算1回のみに抑えることができます}。
 
 \href{https://github.com/golang/go/blob/be9379f8a8e2bfd924966020d177552d01833fdb/src/math/rand/normal.go}{\textcolor{blue}{\underline{Go の \texttt{rand.NormFloat64}}}} や \href{https://github.com/JuliaLang/julia/blob/ab05173c9539efb0aa82319f13672260a7b88076/stdlib/Random/src/normal.jl}{\textcolor{blue}{\underline{Julia の \texttt{randn}}}} では Ziggurat 法が使われています。また、Boost や GNU Scientific Library などの著名なライブラリでも採用されているようです。
 
