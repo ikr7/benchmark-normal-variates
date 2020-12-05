@@ -14,7 +14,7 @@ for line in input_path.read_text().split('\n')[1:-1]:
     time = float(time)
     rate = float(rate)
     samples = float(samples)
-    output_text += f'    {algorithm} & {time :.0f} & {rate :.0f} & {samples} \\\\\n'
+    output_text += f'    {algorithm} & {time :.0f} & {rate :.0f} & {samples :.4f} \\\\\n'
 
 output_text += '    \\bottomrule\n'
 output_text += '\\end{tabular}\n'
