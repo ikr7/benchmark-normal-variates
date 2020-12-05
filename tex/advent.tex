@@ -123,19 +123,9 @@ Go の \texttt{rand.NormFloat64} や Julia の \texttt{randn} はこのアルゴ
 
 \section*{実装・ベンチマーク}
 
-\begin{figure}[t]
-    \centering
-    \begin{subfigmatrix}{3}
-        \subfigure[CLT による近似]{\includegraphics[page=1]{figs/histograms.pdf}}
-        \subfigure[Box-Muller 法]{\includegraphics[page=2]{figs/histograms.pdf}}
-        \subfigure[Polar 法]{\includegraphics[page=3]{figs/histograms.pdf}}
-        \subfigure[Kinderman 法]{\includegraphics[page=4]{figs/histograms.pdf}}
-        \subfigure[Monty-Python 法]{\includegraphics[page=5]{figs/histograms.pdf}}
-        \subfigure[Ziggurat 法]{\includegraphics[page=6]{figs/histograms.pdf}}
-    \end{subfigmatrix}
-    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n-samples.tex}}$)}
-    \label{fig:histogram}
-\end{figure}
+以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz)、コンパイラは GCC (\texttt{g++}) です。また、コンパイル時には \texttt{-O2} による最適化を行いました。
+
+以上の環境のもと、各アルゴリズムで $N = 10^{\protect\input{n-samples.tex}}$ 個のサンプリングを行いました。表 \ref{tab:benchmark-result} に計測結果をまとめます。また、図 \ref{fig:histogram} はそれぞれのアルゴリズムで生成した乱数列のヒストグラムです。
 
 \begin{table}
     \caption{ベンチマーク結果 ($N = 10^{\protect\input{n-samples.tex}}$)}
@@ -150,7 +140,19 @@ Go の \texttt{rand.NormFloat64} や Julia の \texttt{randn} はこのアルゴ
     \end{threeparttable}
 \end{table}
 
-以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz) です。
+\begin{figure}[t]
+    \centering
+    \begin{subfigmatrix}{3}
+        \subfigure[CLT による近似]{\includegraphics[page=1]{figs/histograms.pdf}}
+        \subfigure[Box-Muller 法]{\includegraphics[page=2]{figs/histograms.pdf}}
+        \subfigure[Polar 法]{\includegraphics[page=3]{figs/histograms.pdf}}
+        \subfigure[Kinderman 法]{\includegraphics[page=4]{figs/histograms.pdf}}
+        \subfigure[Monty-Python 法]{\includegraphics[page=5]{figs/histograms.pdf}}
+        \subfigure[Ziggurat 法]{\includegraphics[page=6]{figs/histograms.pdf}}
+    \end{subfigmatrix}
+    \caption{生成した乱数列のヒストグラム ($N = 10^{\protect\input{n-samples.tex}}$)}
+    \label{fig:histogram}
+\end{figure}
 
 \section*{考察}
 
