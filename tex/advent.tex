@@ -113,19 +113,19 @@ Box-Muller 法は、一度のサンプリングに平方根・対数・三角関
 
 Monty-Python 法 \cite{marsaglia1998monty} は、確率密度関数のグラフを変形して長方形に詰めこむことで、棄却サンプリングを効率化するというアイデアに基づくアルゴリズムです。
 
-正規分布に対して Monty-Python 法を適用する場合、確率密度関数を図 \ref{fig:monty-python-plot} で示す $A$, $B$, $C$, $D$ の 4 つの領域に分割し、$C$ を $C'$ に回転・移動させ、幅 $b$ 、高さ $0.5/b$ の長方形に詰め込みます。この際、$a = \sqrt{\log 4}$, $b = \sqrt{2 \pi}$ とし、さらに $C'$ を適切にスケーリングすることで、棄却確率を約 1.2\% まで下げることができます。また、$B$ と $C'$ の間の領域 $D'$ は $D$ と同じ面積なので、サンプルした点が $f(x)$ と $g(x)$ の間にあった場合は $D$ からのサンプリングを行います。
+正規分布に対して Monty-Python 法を適用する場合、確率密度関数を図 \ref{fig:monty-python-plot} で示す $A$, $B$, $C$, $D$ の 4 つの領域に分割し、$C$ を $C'$ に回転・移動させることで、幅 $b$ 、高さ $0.5/b$ の長方形に詰め込みます。この際、$a = \sqrt{\log 4}$, $b = \sqrt{2 \pi}$ とし、さらに $C'$ を適切にスケーリングすることで、棄却確率を約 1.2\% まで下げることができます。また、$B$ と $C'$ の間の領域 $D'$ は $D$ と同じ面積なので、サンプルした点が $D'$ 上にあった場合は $D$ からのサンプリングを行います。
 
 \subsection*{Ziggurat 法}
 
-Ziggurat 法 \cite{marsaglia1984fast, marsaglia2000ziggurat} は、数学関数の呼び出しを減らすだけでなく、浮動小数点数の算術・比較演算の回数を極限まで削減することを目的として考案されたアルゴリズムです。事前計算したルックアップテーブルに基づいて確率密度関数を $n$ 個（ここで $n$ は $256$ または $128$ が用いられることが多いです）の面積が等しい長方形で覆い、きわめて効率良く棄却サンプリングを行います。高効率なサンプリングとビット演算を多用した計算のテクニックにより、\textbf{99.3 \% の確率で浮動小数演算を乗算1回のみに抑えることができます}。
+Ziggurat 法 \cite{marsaglia1984fast, marsaglia2000ziggurat} は、数学関数の呼び出しを減らすだけでなく、浮動小数点数の算術・比較演算の回数までも極限まで削減することを目的として考案されたアルゴリズムです。事前計算したルックアップテーブルに基づいて確率密度関数を $n$ 個（ここで $n$ は $256$ または $128$ が用いられることが多い）の面積が等しい長方形で覆い、きわめて効率良く棄却サンプリングを行います。高効率なサンプリングとビット演算を多用した計算のテクニックにより、\textbf{99.3 \% の確率で浮動小数演算を乗算1回のみに抑えることができます。}
 
 \href{https://github.com/golang/go/blob/be9379f8a8e2bfd924966020d177552d01833fdb/src/math/rand/normal.go}{\textcolor{blue}{\underline{Go の \texttt{rand.NormFloat64}}}} や \href{https://github.com/JuliaLang/julia/blob/ab05173c9539efb0aa82319f13672260a7b88076/stdlib/Random/src/normal.jl}{\textcolor{blue}{\underline{Julia の \texttt{randn}}}} では Ziggurat 法が使われています。また、Boost や GNU Scientific Library などの著名なライブラリでも採用されているようです。
 
 \section*{実装・ベンチマーク}
 
-以上に紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz)、コンパイラは GCC (\texttt{g++}) です。また、コンパイル時には \texttt{-O2} による最適化を行いました。
+紹介したアルゴリズムを C++ で実装し、速度の比較を行いました。実験に用いた CPU は AMD Ryzen 7 1700 (3GHz)、コンパイラは GCC (\texttt{g++}) です。また、コンパイル時には \texttt{-O2} オプションによる最適化を付けました。
 
-以上の環境のもと、各アルゴリズムで $10^{\protect\input{n-samples-benchmark.tex}}$ 個のサンプリングを行いました。表 \ref{tab:benchmark-result} に計測結果をまとめます。また、図 \ref{fig:histogram} はそれぞれのアルゴリズムで生成した $10^{\protect\input{n-samples-histogram.tex}}$ 個の乱数列のヒストグラムです。
+以上の環境のもと、各アルゴリズムで $10^{\protect\input{n-samples-benchmark.tex}}$ 個のサンプリングを行いました。表 \ref{tab:benchmark-result} に計測結果をまとめます。また、図 \ref{fig:histogram} はそれぞれのアルゴリズムで生成した $10^{\protect\input{n-samples-histogram.tex}}$ 個の乱数列のヒストグラムです。少なくともグラフの形状的には、いずれのアルゴリズムも正しく正規分布を生成できているようです。
 
 \begin{table}
     \caption{ベンチマーク結果 ($N = 10^{\protect\input{n-samples-benchmark.tex}}$)}
@@ -166,7 +166,9 @@ Kinderman 法は他の方法に比べてかなり遅くなりました。これ�
 
 \section*{おわりに}
 
-いかがでしたか？がんばって調べてみましたが…よくわかりませんでした！自分が産まれてないような時代の論文を解読してコードに落とすという体験は、なかなか面白いものがありました。浮動小数点演算を減らすための工夫が FPU の高速化・内蔵化によって微妙になったり、メモリをたくさん使って LUT を参照する Ziggurat が高速だったりと、計算機の進化の潮流を肌で感じることができ、楽しかったです。明日の\href{https://adventar.org/calendars/5671}{\textcolor{blue}{\underline{応用情報 Advent Calender 2020}}} でも、D1の\href{https://twitter.com/shunk031}{\textcolor{blue}{\underline{しゅんけー}}}パイセンが何か面白いことを書いてくれるそうです。お楽しみに！
+いかがでしたか？がんばって調べてみましたが…よくわかりませんでした！自分が産まれてもいないような時代の論文を解読して実装するという体験は、なかなか新鮮なものがありました。浮動小数点演算を減らすための工夫が FPU の高速化・内蔵化によって微妙になったり、メモリをたくさん使って LUT を参照する Ziggurat が高速だったりと、計算機の進化の潮流を肌で感じることができ、とても楽しかったです。
+
+さてさて、明日の\href{https://adventar.org/calendars/5671}{\textcolor{blue}{\underline{応用情報 Advent Calender 2020}}} でも、D1の\href{https://twitter.com/shunk031}{\textcolor{blue}{\underline{しゅんけー}}}パイセンが何か面白いことを書いてくれるそうです。お楽しみに！
 
 \bibliography{reference}
 \bibliographystyle{junsrt}
