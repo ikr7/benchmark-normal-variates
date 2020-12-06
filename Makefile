@@ -1,7 +1,7 @@
 bins = 50
 samples_benchmark = 1000000
 samples_histogram = 100000
-compiler_options = -std=c++2a -Wall --pedantic-errors -O2
+compiler_options = -std=c++2a -Wall --pedantic-errors -O2 -fopenmp
 
 tables = tex/benchmark-result.tex
 figures = tex/figs/histograms.pdf tex/figs/monty-python.pdf tex/figs/normal-dist.pdf

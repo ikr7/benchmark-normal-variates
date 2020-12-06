@@ -233,10 +233,17 @@ struct ZigguratAlgorithm : NormalDistSampler {
     }
 };
 
+struct BenchmaekMeasurement {
+    string name;
+    double time;
+    double speed;
+    double uniform_call;
+};
+
 int main (int argc, char* argv[]) {
 
     // $ ./main {number of samples} {0=benchmark only, 1=output generated numbers}
-    const size_t n = stoi(argv[1]);
+    const size_t n = stoul(argv[1]);
     const bool output = stoi(argv[2]);
 
     CLT cl;
@@ -247,6 +254,7 @@ int main (int argc, char* argv[]) {
     ZigguratAlgorithm<8, uint32_t> za;
 
     vector<NormalDistSampler*> samplers = {&cl, &bm, &po, &km, &mp, &za};
+    vector<BenchmaekMeasurement> measurements(samplers.size());
 
     vector<vector<double>> results(samplers.size());
     chrono::system_clock::time_point start, end;
@@ -266,6 +274,7 @@ int main (int argc, char* argv[]) {
         benchmark_of << "samples" << endl;
     }
 
+    #pragma omp parallel for
     for (size_t sampler_index = 0; sampler_index < samplers.size(); sampler_index++) {
         if (output) {
             results[sampler_index].resize(n);
@@ -281,10 +290,22 @@ int main (int argc, char* argv[]) {
         end = chrono::system_clock::now();
         double time = chrono::duration_cast<chrono::microseconds>(end - start).count();
         if (!output) {
-            benchmark_of << samplers[sampler_index]->name() << "\t";
-            benchmark_of << (time) << "\t";
-            benchmark_of << (n / time * 1000000) << "\t";
-            benchmark_of << ((samplers[sampler_index]->uniform_call) / (double)n) << endl;
+            BenchmaekMeasurement measurement = {
+                samplers[sampler_index]->name(),
+                time,
+                n / time * 1000000,
+                (samplers[sampler_index]->uniform_call) / (double)n
+            };
+            measurements[sampler_index] = measurement;
+        }
+    }
+
+    if (!output) {
+        for (const auto& measurement : measurements) {
+            benchmark_of << measurement.name << "\t";
+            benchmark_of << measurement.time << "\t";
+            benchmark_of << measurement.speed << "\t";
+            benchmark_of << measurement.uniform_call << "\n";
         }
     }
 
