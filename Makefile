@@ -6,7 +6,7 @@ compiler_options = -std=c++2a -Wall --pedantic-errors -O2 -fopenmp
 tables = tex/benchmark-result.tex
 figures = tex/figs/histograms.pdf tex/figs/monty-python.pdf tex/figs/normal-dist.pdf
 
-advent.pdf: $(figures) $(tables)
+advent.pdf: $(figures) $(tables) tex/advent.tex
 	cd tex && latexmk -quiet -r latexmkrc -C advent.tex
 	cd tex && latexmk -quiet -r latexmkrc advent.tex
 	cd tex && latexmk -quiet -r latexmkrc -c advent.tex
