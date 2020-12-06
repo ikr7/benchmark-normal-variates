@@ -1,22 +1,29 @@
 from pathlib import Path
+from math import log10
 
 input_path = Path('benchmark.txt')
-output_path = Path('tex/benchmark-result.tex')
+benchmark_output_path = Path('tex/benchmark-result.tex')
+n_output_path = Path('tex/n-samples-benchmark.tex')
 
-output_text = ''
-output_text += '\\begin{tabular}{crrrr}\n'
-output_text += '    \\toprule\n'
-output_text += '    アルゴリズム & 実行時間 (ms) & 速度 \\tnote{a} & $N_U$ \\tnote{b} \\\\\n'
-output_text += '    \\midrule\n'
+benchmark_output_text = ''
+benchmark_output_text += '\\begin{tabular}{crrrr}\n'
+benchmark_output_text += '    \\toprule\n'
+benchmark_output_text += '    アルゴリズム & 実行時間 (ms) & 速度 \\tnote{a} & $N_U$ \\tnote{b} \\\\\n'
+benchmark_output_text += '    \\midrule\n'
 
-for line in input_path.read_text().split('\n')[1:-1]:
+input_text = input_path.read_text().split('\n')
+
+power = int(log10(int(input_text[0])))
+n_output_path.write_text(str(power))
+
+for line in input_text[2:-1]:
     algorithm, time, rate, samples = line.split('\t')
     time = float(time)
     rate = float(rate)
     samples = float(samples)
-    output_text += f'    {algorithm} & {time / 1000:.0f} & {rate :.0f} & {samples :.4f} \\\\\n'
+    benchmark_output_text += f'    {algorithm} & {time / 1000:.0f} & {rate :.0f} & {samples :.4f} \\\\\n'
 
-output_text += '    \\bottomrule\n'
-output_text += '\\end{tabular}\n'
+benchmark_output_text += '    \\bottomrule\n'
+benchmark_output_text += '\\end{tabular}\n'
 
-output_path.write_text(output_text)
+benchmark_output_path.write_text(benchmark_output_text)

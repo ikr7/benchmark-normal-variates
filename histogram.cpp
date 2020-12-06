@@ -33,6 +33,8 @@ int main (int argc, char* argv[]) {
 
     ofstream histogram_of("histogram.txt", ios_base::out);
 
+    histogram_of << (int)log10(n) << endl;
+
     for (size_t i = 0; i < bins; i++) {
         histogram_of << (min + (i + 0.5) * (max - min) / bins) << "\t";
         for (size_t sampler_index = 0; sampler_index < n_samplers; sampler_index++) {

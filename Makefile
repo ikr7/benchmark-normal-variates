@@ -3,9 +3,10 @@ samples_benchmark = 1000000
 samples_histogram = 100000
 compiler_options = -std=c++2a -Wall --pedantic-errors -O2
 
-advent.pdf: figures tables
-	echo "l($(samples_benchmark))/l(10)" | bc -l | cut -f1 -d. > tex/n-samples-benchmark.tex
-	echo "l($(samples_histogram))/l(10)" | bc -l | cut -f1 -d. > tex/n-samples-histogram.tex
+tables = tex/benchmark-result.tex
+figures = tex/figs/histograms.pdf tex/figs/monty-python.pdf tex/figs/normal-dist.pdf
+
+advent.pdf: $(figures) $(tables)
 	cd tex && latexmk -quiet -r latexmkrc -C advent.tex
 	cd tex && latexmk -quiet -r latexmkrc advent.tex
 	cd tex && latexmk -quiet -r latexmkrc -c advent.tex
@@ -13,13 +14,14 @@ advent.pdf: figures tables
 	rm tex/advent.dvi
 	mv tex/advent.pdf .
 
-figures: histogram.txt
+$(figures): histogram.txt
+	head -n1 histogram.txt > tex/n-samples-histogram.tex
 	mkdir -p tex/figs
 	gnuplot histogram.plt
 	gnuplot montypython.plt
 	gnuplot normal-dist.plt
 
-tables: benchmark.txt
+$(tables): benchmark.txt
 	python generate-table.py
 
 histogram.txt: histogram result.txt
@@ -49,4 +51,4 @@ clean:
 	$(RM) tex/n-samples-histogram.tex
 	$(RM) advent.pdf
 
-.PHONY: result.txt benchmark.txt clean
+.PHONY: clean

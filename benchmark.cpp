@@ -251,16 +251,20 @@ int main (int argc, char* argv[]) {
     vector<vector<double>> results(samplers.size());
     chrono::system_clock::time_point start, end;
 
-    ofstream result_of("result.txt", ios_base::out);
-    ofstream benchmark_of("benchmark.txt", ios_base::out);
-
-    result_of << setprecision(8) << fixed;
-    benchmark_of << setprecision(4) << fixed;
-
-    benchmark_of << "algorithm" << "\t";
-    benchmark_of << "time" << "\t";
-    benchmark_of << "rate" << "\t";
-    benchmark_of << "samples" << endl;
+    ofstream result_of, benchmark_of;
+    
+    if (output) {
+        result_of = ofstream("result.txt", ios_base::out);
+        result_of << setprecision(8) << fixed;
+    } else {
+        benchmark_of = ofstream("benchmark.txt", ios_base::out);
+        benchmark_of << setprecision(4) << fixed;
+        benchmark_of << n << "\n";
+        benchmark_of << "algorithm" << "\t";
+        benchmark_of << "time" << "\t";
+        benchmark_of << "rate" << "\t";
+        benchmark_of << "samples" << endl;
+    }
 
     for (size_t sampler_index = 0; sampler_index < samplers.size(); sampler_index++) {
         if (output) {
@@ -276,10 +280,12 @@ int main (int argc, char* argv[]) {
         }
         end = chrono::system_clock::now();
         double time = chrono::duration_cast<chrono::microseconds>(end - start).count();
-        benchmark_of << samplers[sampler_index]->name() << "\t";
-        benchmark_of << (time) << "\t";
-        benchmark_of << (n / time * 1000000) << "\t";
-        benchmark_of << ((samplers[sampler_index]->uniform_call) / (double)n) << endl;
+        if (!output) {
+            benchmark_of << samplers[sampler_index]->name() << "\t";
+            benchmark_of << (time) << "\t";
+            benchmark_of << (n / time * 1000000) << "\t";
+            benchmark_of << ((samplers[sampler_index]->uniform_call) / (double)n) << endl;
+        }
     }
 
     if (output) {
